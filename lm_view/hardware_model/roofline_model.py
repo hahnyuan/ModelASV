@@ -3,7 +3,7 @@ import copy
 
 
 class RooflineModel:
-    def __init__(self, bandwidth, onchip_buffer, compute_capacity, w_bit=32, a_bit=32, operations_multiplier=2):
+    def __init__(self, bandwidth, onchip_buffer, compute_capacity, w_bit=16, a_bit=16, operations_multiplier=2):
         """
         operations_multiplier: the number of operations that a MAC counts as.
             For example, if a MAC counts as 2 operations, then operations_multiplier=2
