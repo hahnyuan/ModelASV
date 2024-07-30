@@ -16,15 +16,8 @@ class LMViewAnalyzer:
         for name, module in model.named_children():
             full_name = prefix_name + f".{name}"
             if type(module) in self.class_pairs:
-                # new_module = self.class_pairs[type(module)]()
-                # module.forward = self.class_pairs[type(module)].forward
                 module.__class__ = self.class_pairs[type(module)]
-                # setattr(module, "forward", self.class_pairs[type(module)].forward)
-                # model._modules[name] = new_module
                 print(f"Replaced {full_name} {type(module)}")
             else:
                 print(f"Skipping {full_name} {type(module)}")
             self.warp_model(full_name, module)
-
-    def analyze_inference(self, x):
-        pass

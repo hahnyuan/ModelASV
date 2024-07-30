@@ -14,8 +14,9 @@ LM-View uses torch.nn module wrappers to wrap all kinds of structures. And it ge
 The `analyze_report` is a EasyDict contains these information:
 - operations
 - weights_shape
-- inputs_shape
-- outputs_shape
+- inputs_shape: dict, default keys are `x1`, `x2`... if there exsists sub module, it should be `<sub_module_name>.x1` ...
+- outputs_shape: dict, default keys are `y1`, `y2`... if there exsists sub module, it should be `<sub_module_name>.x1` ...
+- info: dict, some useful information need to show, such as `num_key_value_groups`, `load_kv_cache`, `store_kv_cache`
 
 ## Simulate model
 
