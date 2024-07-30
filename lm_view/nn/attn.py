@@ -2,7 +2,7 @@ import torch.nn as nn
 import torch
 from typing import List, Optional, Tuple, Union
 from transformers.models.qwen2.modeling_qwen2 import Qwen2SdpaAttention as _Qwen2SdpaAttention
-from easydict import EasyDict
+from .utils import update_analyze_report
 
 
 def analyze_attn(self, B, Q, KV, H, D, n_cache, GQA):
@@ -22,10 +22,8 @@ def analyze_attn(self, B, Q, KV, H, D, n_cache, GQA):
     outputs_shape.update({"sv.y1": (B, H, Q, D)})
 
     info = {"GQA": GQA, "load_kv_cache": n_cache * H // GQA // 2 * D}
-    # print(
-    #     f"Qwen2Attention: {operations} operations, inputs shape: {inputs_shape}, outputs shape: {outputs_shape}, info: {info}"
-    # )
-    self.analyze_report = EasyDict(
+    update_analyze_report(
+        self,
         operations=operations,
         inputs_shape=inputs_shape,
         outputs_shape=outputs_shape,

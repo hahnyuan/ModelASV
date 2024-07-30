@@ -1,5 +1,6 @@
 from .linear import Linear
 from .attn import Qwen2SdpaAttention
+from .norm import Qwen2RMSNorm
 import torch.nn as nn
 
 

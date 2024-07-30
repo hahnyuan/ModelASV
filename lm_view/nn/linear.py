@@ -1,5 +1,5 @@
 from torch.nn import Linear as _Linear
-from easydict import EasyDict
+from .utils import update_analyze_report
 from torch import Tensor
 
 
@@ -18,7 +18,8 @@ class Linear(_Linear):
         # print(
         #     f"Linear: {operations} operations, weights shape: {weights_shape}, inputs shape: {inputs_shape}, outputs shape: {outputs_shape}"
         # )
-        self.analyze_report = EasyDict(
+        update_analyze_report(
+            self,
             operations=operations,
             weights_shape=weights_shape,
             inputs_shape=inputs_shape,
