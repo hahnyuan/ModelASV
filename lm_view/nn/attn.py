@@ -3,34 +3,47 @@ import torch
 from typing import List, Optional, Tuple, Union
 from transformers.models.qwen2.modeling_qwen2 import Qwen2SdpaAttention as _Qwen2SdpaAttention
 from .utils import update_analyze_report
+from .register import register_class
 
 
 def analyze_attn(self, B, Q, KV, H, D, n_cache, GQA):
     # matmul qk
     operations = B * H * D * Q * KV
-    inputs_shape = {"qk.x1": (B, H, Q, D), "qk.x2": (B, H // GQA, KV, D)}
-    outputs_shape = {"qk.y1": (B, H, Q, KV)}
+    inputs_shape = {"q": (B, H, Q, D), "k": (B, H // GQA, KV, D)}
+    outputs_shape = {"s": (B, H, Q, KV)}
 
-    # softmax
-    operations += B * H * Q * KV * 5
-    inputs_shape.update({"softmax.x1": (B, H, Q, KV)})
-    outputs_shape.update({"softmax.y1": (B, H, Q, KV)})
-
-    # matmul sv
-    operations += B * H * KV * Q * D
-    inputs_shape.update({"sv.x1": (B, H, Q, KV), "sv.x2": (B, H // GQA, KV, D)})
-    outputs_shape.update({"sv.y1": (B, H, Q, D)})
-
-    info = {"GQA": GQA, "load_kv_cache": n_cache * H // GQA // 2 * D}
     update_analyze_report(
         self,
+        "qk",
         operations=operations,
         inputs_shape=inputs_shape,
         outputs_shape=outputs_shape,
-        info=info,
+        info={"GQA": GQA, "load_kv_cache": n_cache * H // GQA * D},
+    )
+
+    # softmax
+    operations = B * H * Q * KV * 5
+    update_analyze_report(
+        self,
+        "softmax",
+        operations=operations,
+        inputs_shape={"s": (B, H, Q, KV)},
+        outputs_shape={"p": (B, H, Q, KV)},
+    )
+
+    # matmul pv
+    operations = B * H * KV * Q * D
+    update_analyze_report(
+        self,
+        "pv",
+        operations=operations,
+        inputs_shape={"s": (B, H, Q, KV), "v": (B, H // GQA, KV, D)},
+        outputs_shape={"y": (B, H, Q, D)},
+        info={"GQA": GQA, "load_kv_cache": n_cache * H // GQA * D},
     )
 
 
+@register_class
 class Qwen2SdpaAttention(_Qwen2SdpaAttention):
     raw_nn_class = _Qwen2SdpaAttention
 
