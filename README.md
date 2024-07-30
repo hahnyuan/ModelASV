@@ -1,6 +1,6 @@
 # LM-View
 
-This is a new project in developing.
+This is a new project in developing. Before 1.0 version is finished, it is recommended to use [LLM-Viewer](https://github.com/hahnyuan/LLM-Viewer).
 
 LM-View (Large Models View) is a tool for analyzing models including large language models, multi-modality models and image/video generation models.
 It has two main functions: Analyze model, Simulate model, and Visualize model (web browser).
@@ -11,10 +11,11 @@ Because the training analyzing is becoming more and more important, LM-View targ
 
 LM-View uses torch.nn module wrappers to wrap all kinds of structures. And it generates the `analyze_report` on each module after run inference.
 
-The `analyze_report` contains these information:
+The `analyze_report` is a EasyDict contains these information:
 - operations
-- load_memory
-- store_memory
+- weights_shape
+- inputs_shape
+- outputs_shape
 
 ## Simulate model
 
@@ -24,4 +25,4 @@ LM-View provides the `Simulator` to estimate how fast a module runs at a given h
 
 ## Visualize model
 
-Not implemented yet, please use [LLM-Viewer](https://github.com/hahnyuan/LLM-Viewer) now.
+Not implemented yet.
