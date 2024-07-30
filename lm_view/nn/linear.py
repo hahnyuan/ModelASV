@@ -19,6 +19,7 @@ class Linear(_Linear):
         update_analyze_report(
             self,
             operations=operations,
+            weights_shape={k: v.shape for k, v in self.named_parameters() if v is not None},
             inputs_shape=inputs_shape,
             outputs_shape=outputs_shape,
         )

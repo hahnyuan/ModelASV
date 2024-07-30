@@ -10,28 +10,35 @@ class LMViewAnalyzer:
         self.model = model
         self.class_pairs = get_all_class_pairs()
         print(self.class_pairs)
-        self.skip_classes = []
+        self.warp_info = {}
+        self.unwarp_model(model)
         self.warp_model("", model)
-        print(f"Skipped classes: {self.skip_classes}")
+        print(f"warp_info (>0 means wrapped layers, <0 means not wrapped layers):")
+        for k, v in self.warp_info.items():
+            print(f"{k}: {v}")
 
-    def warp_model(self, prefix_name, model):
+    def warp_model(self, prefix_name, module):
         # replace all modules in model with their corresponding LMView modules
 
-        for name, module in model.named_children():
+        for name, module in module.named_children():
             full_name = prefix_name + f".{name}"
+            if type(module) not in self.warp_info:
+                self.warp_info[type(module)] = 0
             if type(module) in self.class_pairs:
+                self.warp_info[type(module)] += 1
                 module.__class__ = self.class_pairs[type(module)]
                 # print(f"Replaced {full_name} {type(module)}")
             else:
                 # print(f"Skipping {full_name} {type(module)}")
-                if type(module) not in self.skip_classes:
-                    self.skip_classes.append(type(module))
+                self.warp_info[type(module)] -= 1
             self.warp_model(full_name, module)
 
-    def unwarp_model(self):
-        for name, module in self.model.named_children():
+    def unwarp_model(self, module):
+        for name, module in module.named_children():
             if hasattr(module, "raw_nn_class"):
-                module.__class__ = self.class_pairs[type(module)].raw_nn_class
+                module.__class__ = module.raw_nn_class
+            if hasattr(module, "analyze_report"):
+                del module.analyze_report
             self.unwarp_model(module)
 
     def accumulate_report(self):

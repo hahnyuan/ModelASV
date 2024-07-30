@@ -26,7 +26,7 @@ class RooflineModel:
         tot_weights_bytes = 0
         tot_inputs_bytes = 0
         tot_outputs_bytes = 0
-        tot_mem_access = 0
+        tot_mem_access_bytes = 0
 
         for layer_name, layer_reports in analyze_report.items():
             for i, report in enumerate(layer_reports):
@@ -39,12 +39,12 @@ class RooflineModel:
                 tot_inputs_bytes += n_inputs * self.a_bit / 8
                 n_outputs = sum([np.prod(x) for x in report["outputs_shape"].values()])
                 tot_outputs_bytes += n_outputs * self.a_bit / 8
-                tot_mem_access += n_inputs + n_outputs + n_weights
+                memory_access_bytes = (n_inputs + n_outputs) * self.a_bit / 8 + n_weights * self.w_bit / 8
+                tot_mem_access_bytes += memory_access_bytes
 
                 # roofline model compute
                 max_OPS = self.compute_capacity[max(self.w_bit, self.a_bit)]
                 y_max = max_OPS
-                memory_access_bytes = n_inputs + n_outputs + n_weights
                 turning_point = y_max / self.bandwidth
                 arithmetic_intensity = operations / memory_access_bytes
                 if arithmetic_intensity < turning_point:
@@ -58,15 +58,23 @@ class RooflineModel:
                 else:
                     inference_time = operations / performance
                 tot_latency += inference_time
-                report["inference_time"] = inference_time
-                report["arithmetic_intensity"] = arithmetic_intensity
-                report["bound"] = bound
+                if "memory_access_bytes" not in report:
+                    report["memory_access_bytes"] = 0
+                    report["operations"] = 0
+                    report["inference_time"] = 0
+                    report["arithmetic_intensity"] = 0
+                    report["bound"] = ""
+                report["memory_access_bytes"] += memory_access_bytes
+                report["operations"] += operations
+                report["inference_time"] += inference_time
+                report["arithmetic_intensity"] += arithmetic_intensity
+                report["bound"] += bound + " "
         tot_info = {
             "operations": tot_operations,
             "weights_bytes": tot_weights_bytes,
             "inputs_bytes": tot_inputs_bytes,
             "outputs_bytes": tot_outputs_bytes,
-            "mem_access": tot_mem_access,
+            "mem_access": tot_mem_access_bytes,
             "latency": tot_latency,
         }
-        return tot_info, analyze_report
+        return analyze_report, tot_info
