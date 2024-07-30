@@ -54,9 +54,8 @@ class LMViewAnalyzer:
         tot_weights = 0
         tot_inputs = 0
         tot_outputs = 0
-        tot_mem_access = 0
-        for k, v in self.model.analyze_report.items():
-            for i, report in enumerate(v):
+        for layer_name, layer_reports in self.model.analyze_report.items():
+            for i, report in enumerate(layer_reports):
                 tot_operations += report["operations"]
                 n_weights = sum([np.prod(x) for x in report["weights_shape"].values()])
                 if i == 0:
@@ -65,11 +64,10 @@ class LMViewAnalyzer:
                 tot_inputs += n_inputs
                 n_outputs = sum([np.prod(x) for x in report["outputs_shape"].values()])
                 tot_outputs += n_outputs
-                tot_mem_access += n_inputs + n_outputs + n_weights
-        return {
+        tot_info = {
             "operations": tot_operations,
             "weights": tot_weights,
             "inputs": tot_inputs,
             "outputs": tot_outputs,
-            "mem_access": tot_mem_access,
         }
+        return self.model.analyze_report, tot_info
