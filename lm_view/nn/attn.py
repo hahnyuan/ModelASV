@@ -3,6 +3,7 @@ import torch
 from typing import List, Optional, Tuple, Union
 from transformers.models.qwen2.modeling_qwen2 import Qwen2SdpaAttention as _Qwen2SdpaAttention
 from transformers.models.llama.modeling_llama import LlamaSdpaAttention as _LlamaSdpaAttention
+from diffusers.models.attention_processor import Attention as _Attention
 from .utils import update_analyze_report
 from .register import register_class
 
@@ -68,6 +69,7 @@ class Qwen2SdpaAttention(_Qwen2SdpaAttention):
             n_cache = past_key_value.get_usable_length(Q, self.layer_idx)
             KV = Q + n_cache
         else:
+            n_cache = 0
             KV = Q
         analyze_attn(self, B, Q, KV, H, D, n_cache, GQA)
 
@@ -103,6 +105,7 @@ class LlamaSdpaAttention(_LlamaSdpaAttention):
             n_cache = past_key_value.get_usable_length(Q, self.layer_idx)
             KV = Q + n_cache
         else:
+            n_cache = 0
             KV = Q
         analyze_attn(self, B, Q, KV, H, D, n_cache, GQA)
         # print(f"Q={Q}, KV={KV}, n_cache={n_cache}, past_key_value={len(past_key_value)}")
@@ -117,4 +120,41 @@ class LlamaSdpaAttention(_LlamaSdpaAttention):
             cache_position,
             **kwargs,
         )
+        return output
+
+
+@register_class
+class Attention(_Attention):
+    raw_nn_class = _Attention
+
+    def forward(
+        self,
+        hidden_states: torch.Tensor,
+        encoder_hidden_states: Optional[torch.Tensor] = None,
+        attention_mask: Optional[torch.Tensor] = None,
+        **cross_attention_kwargs,
+    ) -> torch.Tensor:
+
+        GQA = 1
+        input_ndim = hidden_states.ndim
+
+        if input_ndim == 4:
+            B, C, height, width = hidden_states.shape
+            Q = height * width
+        else:
+            B, Q = hidden_states.shape[:2]
+
+        H = self.heads
+        D = self.inner_dim // H
+        n_cache = 0
+        if encoder_hidden_states is not None:
+            # this should run before forward because it will change the shape of KV
+            assert encoder_hidden_states.ndim == 3
+            KV = encoder_hidden_states.size(1)
+        else:
+            KV = Q
+        analyze_attn(self, B, Q, KV, H, D, n_cache, GQA)
+        # print(f"Q={Q}, KV={KV}, n_cache={n_cache}, past_key_value={len(past_key_value)}")
+
+        output = super().forward(hidden_states, encoder_hidden_states, attention_mask, **cross_attention_kwargs)
         return output
