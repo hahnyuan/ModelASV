@@ -57,6 +57,7 @@ class RooflineModel:
                     inference_time = memory_access_bytes / self.bandwidth
                 else:
                     inference_time = operations / performance
+
                 tot_latency += inference_time
                 if "memory_access_bytes" not in report:
                     report["memory_access_bytes"] = 0

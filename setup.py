@@ -9,7 +9,7 @@ setup(
     author_email="hahnyuan@gmail.com",
     url="https://github.com/hahnyuan/LM-View",
     packages=find_packages(),
-    install_requires=["torch"],
+    install_requires=["torch", "transformers", "diffusers"],
     classifiers=[
         "Development Status :: 3 - Alpha",
         "Intended Audience :: Developers",
