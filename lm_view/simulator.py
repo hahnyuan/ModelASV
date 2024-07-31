@@ -28,7 +28,10 @@ class LMSimulator:
                 tot_inputs_bytes += n_inputs * a_bit / 8
                 n_outputs = sum([np.prod(x) for x in report["outputs_shape"].values()])
                 tot_outputs_bytes += n_outputs * a_bit / 8
-                memory_access_bytes = (n_inputs + n_outputs) * a_bit / 8 + n_weights * w_bit / 8
+                weight_access_offset = report["info"].get("weight_access_offset", 0)
+                memory_access_bytes = (n_inputs + n_outputs) * a_bit / 8 + (
+                    n_weights + weight_access_offset
+                ) * w_bit / 8
                 tot_mem_access_bytes += memory_access_bytes
 
                 # roofline model compute

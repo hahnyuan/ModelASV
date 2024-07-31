@@ -13,11 +13,14 @@ class Embedding(_Embedding):
         output = super().forward(input)
         inputs_shape = {"x": input.shape}
         outputs_shape = {"y": output.shape}
+
+        # Embedding should not load all of the weights, so we need to specify the memory access offset
         update_analyze_report(
             self,
             operations=0,
             weights_shape={k: v.shape for k, v in self.named_parameters() if v is not None},
             inputs_shape=inputs_shape,
             outputs_shape=outputs_shape,
+            info={"weight_access_offset": output.numel() - self.weight.data.numel()},
         )
         return output
