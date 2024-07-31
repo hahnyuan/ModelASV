@@ -6,9 +6,9 @@ class LMSimulator:
     def __init__(self, hardware_model):
         self.hardware_model = hardware_model
 
-    def simulate(self, accumulate_analyze_report, w_bit, a_bit):
+    def simulate(self, analyze_result, w_bit, a_bit):
 
-        analyze_report = copy.deepcopy(accumulate_analyze_report)
+        layerwise_report = copy.deepcopy(analyze_result["layerwise_report"])
         tot_latency = 0
 
         tot_operations = 0
@@ -17,7 +17,7 @@ class LMSimulator:
         tot_outputs_bytes = 0
         tot_mem_access_bytes = 0
 
-        for layer_name, layer_reports in analyze_report.items():
+        for layer_name, layer_reports in layerwise_report.items():
             for i, report in enumerate(layer_reports):
                 operations = report["operations"]
                 tot_operations += operations
@@ -57,4 +57,4 @@ class LMSimulator:
             "mem_access": tot_mem_access_bytes,
             "latency": tot_latency,
         }
-        return analyze_report, tot_info
+        return layerwise_report, tot_info

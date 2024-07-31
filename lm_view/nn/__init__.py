@@ -1,4 +1,4 @@
-from . import attn, linear, norm, conv
+from . import attn, linear, norm, conv, embedding
 import torch.nn as nn
 from .register import analyze_classes
 

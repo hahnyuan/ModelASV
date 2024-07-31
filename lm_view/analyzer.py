@@ -6,43 +6,48 @@ import numpy as np
 
 
 class LMViewAnalyzer:
-    def __init__(self, model) -> None:
-        self.model = model
+    def __init__(self, verbose=False) -> None:
         self.class_pairs = get_all_class_pairs()
-        print(self.class_pairs)
-        self.warp_info = {}
+        self.verbose = verbose
+        if self.verbose:
+            print("Class Pairs:", self.class_pairs)
+
+    def warp_model(self, model, reset=True):
         self.unwarp_model(model)
-        self.warp_model("", model)
-        print(f"warp_info (>0 means wrapped layers, <0 means not wrapped layers):")
-        for k, v in self.warp_info.items():
-            print(f"{k}: {v}")
 
-    def warp_model(self, prefix_name, module):
-        # replace all modules in model with their corresponding LMView modules
+        warp_info = {}
 
-        for name, module in module.named_children():
-            full_name = prefix_name + f".{name}"
-            if type(module) not in self.warp_info:
-                self.warp_info[type(module)] = 0
-            if type(module) in self.class_pairs:
-                self.warp_info[type(module)] += 1
-                module.__class__ = self.class_pairs[type(module)]
-                # print(f"Replaced {full_name} {type(module)}")
-            else:
-                # print(f"Skipping {full_name} {type(module)}")
-                self.warp_info[type(module)] -= 1
-            self.warp_model(full_name, module)
+        def warp_module(prefix_name, module):
+            # replace all modules in model with their corresponding LMView modules
 
-    def unwarp_model(self, module):
-        for name, module in module.named_children():
+            for name, module in module.named_children():
+                full_name = prefix_name + f".{name}"
+                if type(module) not in warp_info:
+                    warp_info[type(module)] = 0
+                if type(module) in self.class_pairs:
+                    warp_info[type(module)] += 1
+                    module.__class__ = self.class_pairs[type(module)]
+                    if reset:
+                        module.analyze_report = {}
+                    # print(f"Replaced {full_name} {type(module)}")
+                else:
+                    # print(f"Skipping {full_name} {type(module)}")
+                    warp_info[type(module)] -= 1
+                warp_module(full_name, module)
+
+        warp_module("", model)
+        if self.verbose:
+            print(f"warp_info (>0 means wrapped layers, <0 means not wrapped layers):")
+            for k, v in self.warp_info.items():
+                print(f"{k}: {v}")
+        return warp_info
+
+    def unwarp_model(self, model):
+        for name, module in model.named_modules():
             if hasattr(module, "raw_nn_class"):
                 module.__class__ = module.raw_nn_class
-            if hasattr(module, "analyze_report"):
-                del module.analyze_report
-            self.unwarp_model(module)
 
-    def accumulate_report(self):
-
+    def accumulate_report(self, model):
         def accumulate(module):
             if not hasattr(module, "analyze_report"):
                 module.analyze_report = {}
@@ -56,13 +61,13 @@ class LMViewAnalyzer:
                             subname = f"{name}.{k}"
                         module.analyze_report[subname] = v
 
-        accumulate(self.model)
+        accumulate(model)
 
         tot_operations = 0
         tot_weights = 0
         tot_inputs = 0
         tot_outputs = 0
-        for layer_name, layer_reports in self.model.analyze_report.items():
+        for layer_name, layer_reports in model.analyze_report.items():
             for i, report in enumerate(layer_reports):
                 tot_operations += report["operations"]
                 n_weights = sum([np.prod(x) for x in report["weights_shape"].values()])
@@ -72,11 +77,11 @@ class LMViewAnalyzer:
                 tot_inputs += n_inputs
                 n_outputs = sum([np.prod(x) for x in report["outputs_shape"].values()])
                 tot_outputs += n_outputs
-        tot_info = {
-            "operations": tot_operations,
-            "weights": tot_weights,
-            "inputs": tot_inputs,
-            "outputs": tot_outputs,
+        rst = {
+            "tot_operations": tot_operations,
+            "tot_weights": tot_weights,
+            "tot_inputs": tot_inputs,
+            "tot_outputs": tot_outputs,
+            "layerwise_report": model.analyze_report,
         }
-        self.model.accumulate_analyze_report = self.model.analyze_report
-        return self.model.accumulate_analyze_report, tot_info
+        return rst
