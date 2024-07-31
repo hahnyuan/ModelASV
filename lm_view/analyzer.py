@@ -42,6 +42,7 @@ class LMViewAnalyzer:
             self.unwarp_model(module)
 
     def accumulate_report(self):
+
         def accumulate(module):
             if not hasattr(module, "analyze_report"):
                 module.analyze_report = {}
@@ -77,4 +78,5 @@ class LMViewAnalyzer:
             "inputs": tot_inputs,
             "outputs": tot_outputs,
         }
-        return self.model.analyze_report, tot_info
+        self.model.accumulate_analyze_report = self.model.analyze_report
+        return self.model.accumulate_analyze_report, tot_info

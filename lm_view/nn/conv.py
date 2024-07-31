@@ -11,7 +11,7 @@ class Conv2d(_Conv2d):
 
     def forward(self, input: Tensor) -> Tensor:
         output = super().forward(input)
-        operations = output.numel() * np.prod(self.weight.shape[1:])
+        operations = output.numel() * np.prod(self.weight.shape[1:]) * 2  # mul, add
         inputs_shape = {"x": input.shape}
         outputs_shape = {"y": output.shape}
         update_analyze_report(

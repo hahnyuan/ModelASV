@@ -10,7 +10,7 @@ class Linear(_Linear):
 
     def forward(self, input: Tensor) -> Tensor:
         output = super().forward(input)
-        operations = output.numel() * self.in_features
+        operations = output.numel() * self.in_features * 2  # mul, add
         inputs_shape = {"x": input.shape}
         outputs_shape = {"y": output.shape}
         # print(
