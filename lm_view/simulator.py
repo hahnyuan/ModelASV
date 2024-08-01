@@ -1,10 +1,15 @@
 import copy
 import numpy as np
+import re
 
 
 class LMSimulator:
-    def __init__(self, hardware_model):
+    def __init__(self, hardware_model, verbose=False):
         self.hardware_model = hardware_model
+        self.verbose = verbose
+
+    def get_hardware_model(self, layer_name):
+        return self.hardware_model
 
     def simulate(self, analyze_result, w_bit, a_bit):
 
@@ -36,7 +41,8 @@ class LMSimulator:
 
                 # roofline model compute
                 compute_bit = max(w_bit, a_bit)
-                inference_time, simulate_info = self.hardware_model.run(
+                hardware_model = self.get_hardware_model(layer_name)
+                inference_time, simulate_info = hardware_model.run(
                     operations, memory_access_bytes, compute_bit, report["info"]
                 )
 
@@ -61,3 +67,25 @@ class LMSimulator:
             "latency": tot_latency,
         }
         return layerwise_report, tot_info
+
+
+class HeterogeneousSimulator(LMSimulator):
+    def __init__(self, models_mapping, default_hardware_model, verbose=False):
+        """
+        models_mapping: a dict with keys as the hardware model
+             and values as the list of str
+        """
+        self.models_mapping = models_mapping
+        self.default_hardware_model = default_hardware_model
+        self.verbose = verbose
+
+    def get_hardware_model(self, layer_name):
+        for hardware_model, match_list in self.models_mapping.items():
+            for s in match_list:
+                if s in layer_name:
+                    if self.verbose:
+                        print(f"Matched {s} in {layer_name}, using {hardware_model}")
+                    return hardware_model
+        if self.verbose:
+            print(f"Using default hardware model for {layer_name}")
+        return self.default_hardware_model

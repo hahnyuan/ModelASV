@@ -1,5 +1,4 @@
 from setuptools import setup, find_packages
-from setuptools import setup, find_packages
 
 setup(
     name="lm-view",
@@ -15,10 +14,5 @@ setup(
         "Intended Audience :: Developers",
         "License :: OSI Approved :: MIT License",
         "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.6",
-        "Programming Language :: Python :: 3.7",
-        "Programming Language :: Python :: 3.8",
     ],
-    package_dir={"lm_view": "path/to/lm_view"},  # Replace "path/to/lm_view" with the actual path to the lm_view folder
-    package_data={"lm_view": ["*.txt", "*.csv"]},  # Include any additional data files if needed
 )
