@@ -13,7 +13,42 @@ Because the training analyzing is becoming more and more important, ModelASV tar
 pip install modelasv
 ```
 
-## Analyze model
+## Usage
+
+You can see example in `examples` folder. Here is a simple example:
+
+```python
+import torch
+from diffusers import StableDiffusionPipeline
+from modelasv import LMViewAnalyzer, RooflineModel, LMSimulator
+
+
+model_id = "runwayml/stable-diffusion-v1-5"
+pipe = StableDiffusionPipeline.from_pretrained(model_id, torch_dtype=torch.float16)
+pipe = pipe.to("cuda")
+
+
+analyzer = LMViewAnalyzer()
+bandwidth = 100e9
+compute = 100e12
+rf = RooflineModel(bandwidth, 27648e3, {8: compute})
+simulator = LMSimulator(rf)
+
+with torch.no_grad():
+    for model in [pipe.text_encoder, pipe.unet, pipe.vae]:
+        analyzer.warp_model(model)
+        prompt = "a photo of an astronaut riding a horse on mars"
+        image = pipe(prompt, num_inference_steps=20).images[0]
+        analyzer.unwarp_model(model)
+        analyze_result = analyzer.accumulate_report(model)
+        report, tot_report = simulator.simulate(analyze_result, a_bit=8, w_bit=8)
+        print(tot_report)
+```
+
+
+## API description
+
+### Analyze model
 
 ModelASV uses torch.nn module wrappers to wrap all kinds of structures. And it generates the `analyze_report` on each module after run inference.
 
@@ -26,12 +61,12 @@ The `analyze_report` is a dict (if module itself "", else sub-module name) conta
 If there are sub-module, there are more than one dict in the analyze_report dict.
 If we execute the module several times, there should be multiple dict with these information.
 
-## Simulate model
+### Simulate model
 
 ModelASV provides the `Simulator` to estimate how fast a module runs at a given hardware device.
 
 - `RooflineModelSimulator`
 
-## Visualize model
+### Visualize model
 
-Not implemented yet.
+Comming soon.
