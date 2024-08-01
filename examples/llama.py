@@ -1,8 +1,6 @@
 import torch
 from transformers import AutoModelForCausalLM, AutoConfig
-from lm_view.analyzer import LMViewAnalyzer
-from lm_view.hardware_model.roofline_model import RooflineModel
-from lm_view.simulator import LMSimulator
+from modelasv import LMViewAnalyzer, RooflineModel, LMSimulator
 from transformers.modeling_utils import no_init_weights
 
 model_id = "meta-llama/Llama-2-7b-hf"

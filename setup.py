@@ -1,12 +1,12 @@
 from setuptools import setup, find_packages
 
 setup(
-    name="lm-view",
+    name="modelasv",
     version="0.1",
-    description="LM-View: Your Description Here",
+    description="ModelASV: Analyze, Simulate and Visulize the Performance of Large Neural Network Models",
     author="Zhihang Yuan",
     author_email="hahnyuan@gmail.com",
-    url="https://github.com/hahnyuan/LM-View",
+    url="https://github.com/hahnyuan/ModelASV",
     packages=find_packages(),
     install_requires=["torch", "transformers", "diffusers"],
     classifiers=[

@@ -1,8 +1,6 @@
 import torch
 from transformers.models.qwen2.modeling_qwen2 import Qwen2ForCausalLM, Qwen2Config
-from lm_view.analyzer import LMViewAnalyzer
-from lm_view.hardware_model.roofline_model import RooflineModel
-from lm_view.simulator import LMSimulator
+from modelasv import LMViewAnalyzer, RooflineModel, LMSimulator
 from transformers.modeling_utils import no_init_weights
 
 model_id = "Qwen/Qwen1.5-7B"

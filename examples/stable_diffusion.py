@@ -1,8 +1,7 @@
 import torch
 from diffusers import StableDiffusionPipeline
-from lm_view.analyzer import LMViewAnalyzer
-from lm_view.hardware_model.roofline_model import RooflineModel
-from lm_view.simulator import LMSimulator
+from modelasv import LMViewAnalyzer, RooflineModel, LMSimulator
+
 
 model_id = "runwayml/stable-diffusion-v1-5"
 pipe = StableDiffusionPipeline.from_pretrained(model_id, torch_dtype=torch.float16)

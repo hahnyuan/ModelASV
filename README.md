@@ -1,15 +1,21 @@
-# LM-View
+# ModelASV
 
-This is a new project in developing. Before 1.0 version is finished, it is recommended to use [LLM-Viewer](https://github.com/hahnyuan/LLM-Viewer).
+This is a project in developing. 
 
-LM-View (Large Models View) is a tool for analyzing models including large language models, multi-modality models and image/video generation models.
+ModelASV is a tool for analyzing models including large language models, multi-modality models and image/video generation models.
 It has two main functions: Analyze model, Simulate model, and Visualize model (web browser).
 
-Because the training analyzing is becoming more and more important, LM-View targets analyzing both the training and the infernce of models.
+Because the training analyzing is becoming more and more important, ModelASV targets analyzing both the training and the infernce of models.
+
+## Install
+
+```bash
+pip install modelasv
+```
 
 ## Analyze model
 
-LM-View uses torch.nn module wrappers to wrap all kinds of structures. And it generates the `analyze_report` on each module after run inference.
+ModelASV uses torch.nn module wrappers to wrap all kinds of structures. And it generates the `analyze_report` on each module after run inference.
 
 The `analyze_report` is a dict (if module itself "", else sub-module name) contains list of dict with these information:
 - operations
@@ -22,7 +28,7 @@ If we execute the module several times, there should be multiple dict with these
 
 ## Simulate model
 
-LM-View provides the `Simulator` to estimate how fast a module runs at a given hardware device.
+ModelASV provides the `Simulator` to estimate how fast a module runs at a given hardware device.
 
 - `RooflineModelSimulator`
 
