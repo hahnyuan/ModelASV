@@ -38,7 +38,7 @@ class LMViewAnalyzer:
         warp_module("", model)
         if self.verbose:
             print(f"warp_info (>0 means wrapped layers, <0 means not wrapped layers):")
-            for k, v in self.warp_info.items():
+            for k, v in warp_info.items():
                 print(f"{k}: {v}")
         return warp_info
 

@@ -10,7 +10,7 @@ with no_init_weights():
     model = AutoModelForCausalLM.from_config(config).half().to(device).eval()
 
 
-analyzer = LMViewAnalyzer()
+analyzer = LMViewAnalyzer(verbose=True)
 bandwidth = 100e9
 compute = 100e12
 rf = RooflineModel(bandwidth, 27648e3, {8: compute})

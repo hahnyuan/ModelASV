@@ -1,5 +1,6 @@
 import torch.nn as nn
 from torch.nn import GroupNorm as _GroupNorm
+from torch.nn import LayerNorm as _LayerNorm
 import torch
 from typing import List, Optional, Tuple, Union
 from transformers.models.qwen2.modeling_qwen2 import Qwen2RMSNorm as _Qwen2RMSNorm
@@ -57,6 +58,29 @@ class GroupNorm(_GroupNorm):
         output = super().forward(input)
         # mean, var, sub, div, mul, add
         if self.affine:
+            operations = input.numel() * 6
+        else:
+            operations = input.numel() * 4
+        inputs_shape = {"x": input.shape}
+        outputs_shape = {"y": output.shape}
+        update_analyze_report(
+            self,
+            operations=operations,
+            weights_shape={k: v.shape for k, v in self.named_parameters() if v is not None},
+            inputs_shape=inputs_shape,
+            outputs_shape=outputs_shape,
+        )
+        return output
+
+
+@register_class
+class LayerNorm(_LayerNorm):
+    raw_nn_class = _LayerNorm
+
+    def forward(self, input: torch.Tensor) -> torch.Tensor:
+        output = super().forward(input)
+        # mean, var, sub, div, mul, add
+        if self.elementwise_affine:
             operations = input.numel() * 6
         else:
             operations = input.numel() * 4
