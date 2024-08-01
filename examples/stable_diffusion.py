@@ -10,16 +10,17 @@ pipe = pipe.to("cuda")
 
 analyzer = LMViewAnalyzer()
 bandwidth = 100e9
-compute = 100e12
-rf = RooflineModel(bandwidth, 27648e3, {8: compute})
+compute_capacity = {8: 100e12}
+# compute_capacity: the compute capacity of the accelerator, a dict with keys as bitwidth and values as FLOPS/OPS
+#    The bitwidth is the bitwidth of the data type, e.g., 32 for float32 and 16 for float16
+rf = RooflineModel(bandwidth, compute_capacity)
 simulator = LMSimulator(rf)
 
 with torch.no_grad():
     for model in [pipe.text_encoder, pipe.unet, pipe.vae]:
-        analyzer.warp_model(model)
         prompt = "a photo of an astronaut riding a horse on mars"
-        image = pipe(prompt, num_inference_steps=20).images[0]
-        analyzer.unwarp_model(model)
+        with analyzer.analyze(model):
+            image = pipe(prompt, num_inference_steps=20).images[0]
         analyze_result = analyzer.accumulate_report(model)
         report, tot_report = simulator.simulate(analyze_result, a_bit=8, w_bit=8)
         print(tot_report)

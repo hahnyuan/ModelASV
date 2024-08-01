@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="modelasv",
-    version="0.1",
+    version="0.1.1",
     description="ModelASV: Analyze, Simulate and Visulize the Performance of Large Neural Network Models",
     author="Zhihang Yuan",
     author_email="hahnyuan@gmail.com",

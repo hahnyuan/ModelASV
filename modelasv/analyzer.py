@@ -12,8 +12,8 @@ class LMViewAnalyzer:
         if self.verbose:
             print("Class Pairs:", self.class_pairs)
 
-    def warp_model(self, model, reset=True):
-        self.unwarp_model(model)
+    def _warp_model(self, model, reset=True):
+        self._unwarp_model(model)
 
         warp_info = {}
 
@@ -42,10 +42,23 @@ class LMViewAnalyzer:
                 print(f"{k}: {v}")
         return warp_info
 
-    def unwarp_model(self, model):
+    def _unwarp_model(self, model):
         for name, module in model.named_modules():
             if hasattr(module, "raw_nn_class"):
                 module.__class__ = module.raw_nn_class
+
+    def analyze(self, model, reset=True):
+        class WarpContext:
+            def __init__(self, analyzer):
+                self.analyzer = analyzer
+
+            def __enter__(self):
+                self.analyzer._warp_model(model, reset)
+
+            def __exit__(self, exc_type, exc_val, exc_tb):
+                self.analyzer._unwarp_model(model)
+
+        return WarpContext(self)
 
     def accumulate_report(self, model):
         def accumulate(module):

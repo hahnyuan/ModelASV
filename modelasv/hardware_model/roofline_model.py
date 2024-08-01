@@ -3,13 +3,13 @@ import copy
 
 
 class RooflineModel:
-    def __init__(self, bandwidth, onchip_buffer, compute_capacity):
+    def __init__(self, bandwidth, compute_capacity):
         """
+        bandwidth: the bandwidth of the accelerator
         compute_capacity: the compute capacity of the accelerator, a dict with keys as bitwidth and values as FLOPS/OPS
             The bitwidth is the bitwidth of the data type, e.g., 32 for float32 and 16 for float16
         """
         self.bandwidth = bandwidth
-        self.onchip_buffer = onchip_buffer
         self.compute_capacity = compute_capacity
 
     def run(self, operations, memory_access_bytes, compute_bit, info):

@@ -12,27 +12,27 @@ with no_init_weights():
 
 analyzer = LMViewAnalyzer()
 bandwidth = 100e9
-compute = 100e12
-rf = RooflineModel(bandwidth, 27648e3, {8: compute})
+compute_capacity = {8: 100e12}
+# compute_capacity: the compute capacity of the accelerator, a dict with keys as bitwidth and values as FLOPS/OPS
+#    The bitwidth is the bitwidth of the data type, e.g., 32 for float32 and 16 for float16
+rf = RooflineModel(bandwidth, compute_capacity)
 simulator = LMSimulator(rf)
 
 with torch.no_grad():
     print("=== prefill ===")
-    analyzer.warp_model(model)
     seqlen = 1024
     x = torch.ones(1, seqlen).long().to(device)
-    y = model(x)
-    analyzer.unwarp_model(model)
+    with analyzer.analyze(model):
+        y = model(x)
     analyze_result = analyzer.accumulate_report(model)
     report, tot_report = simulator.simulate(analyze_result, a_bit=8, w_bit=8)
     print(tot_report)
 
     print("=== decode ===")
-    analyzer.warp_model(model)
     kv_cache = y.past_key_values
     x = torch.ones(1, 1).long().to(device)
-    y = model(x, past_key_values=kv_cache)
-    analyzer.unwarp_model(model)
+    with analyzer.analyze(model):
+        y = model(x, past_key_values=kv_cache)
     analyze_result = analyzer.accumulate_report(model)
     report, tot_report = simulator.simulate(analyze_result, a_bit=8, w_bit=8)
     print(tot_report)
