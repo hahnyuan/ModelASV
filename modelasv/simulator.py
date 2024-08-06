@@ -53,11 +53,14 @@ class LMSimulator:
                     report["inference_time"] = 0
                     report["arithmetic_intensity"] = 0
                     report["simulate_info"] = ""
+                    report["hardware_model"] = hardware_model.name
                 report["memory_access_bytes"] += memory_access_bytes
                 report["operations"] += operations
                 report["inference_time"] += inference_time
                 report["arithmetic_intensity"] += operations / memory_access_bytes
                 report["simulate_info"] += str(simulate_info) + " "
+                if report["hardware_model"] != hardware_model.name:
+                    report["hardware_model"] += " " + hardware_model.name
         tot_info = {
             "operations": tot_operations,
             "weights_bytes": tot_weights_bytes,

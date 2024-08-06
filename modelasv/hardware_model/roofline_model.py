@@ -3,7 +3,7 @@ import copy
 
 
 class RooflineModel:
-    def __init__(self, bandwidth, compute_capacity):
+    def __init__(self, bandwidth, compute_capacity, name="hardware"):
         """
         bandwidth: the bandwidth of the accelerator
         compute_capacity: the compute capacity of the accelerator, a dict with keys as bitwidth and values as FLOPS/OPS
@@ -11,18 +11,18 @@ class RooflineModel:
         """
         self.bandwidth = bandwidth
         self.compute_capacity = compute_capacity
+        self.name = name
 
     def run(self, operations, memory_access_bytes, compute_bit, info):
         max_OPS = self.compute_capacity[compute_bit]
-        y_max = max_OPS
-        turning_point = y_max / self.bandwidth
+        turning_point = max_OPS / self.bandwidth
         arithmetic_intensity = operations / memory_access_bytes
         if arithmetic_intensity < turning_point:
             bound = "memory"
             performance = arithmetic_intensity * self.bandwidth
         else:
             bound = "compute"
-            performance = y_max
+            performance = max_OPS
         if performance == 0:
             inference_time = memory_access_bytes / self.bandwidth
         else:

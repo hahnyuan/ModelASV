@@ -11,8 +11,8 @@ with no_init_weights():
 
 
 analyzer = LMViewAnalyzer(verbose=True)
-bandwidth = 10e9
-compute_capacity = {8: 100e12}
+bandwidth = 100e9  # 100GB/s
+compute_capacity = {8: 100e12}  # 100TOPS
 # compute_capacity: the compute capacity of the accelerator, a dict with keys as bitwidth and values as FLOPS/OPS
 #    The bitwidth is the bitwidth of the data type, e.g., 32 for float32 and 16 for float16
 rf = RooflineModel(bandwidth, compute_capacity)
